@@ -1,0 +1,194 @@
+/* ==========================================
+   GLOBAL VARIABLES & RESET
+========================================== */
+:root {
+  --bg-color: #0b0e14;
+  --surface-color: rgba(20, 25, 35, 0.6);
+  --primary-neon: #00ffcc;
+  --accent-purple: #8a2be2;
+  --text-main: #ffffff;
+  --text-muted: #a0a5b1;
+  --border-glass: rgba(255, 255, 255, 0.08);
+  --gradient-btn: linear-gradient(135deg, #00ffcc, #0088ff);
+  
+  /* Responsive Typography */
+  --font-h1: clamp(2rem, 5vw, 4rem);
+  --font-h2: clamp(1.5rem, 3vw, 2.5rem);
+  --font-p: clamp(0.9rem, 2vw, 1rem);
+}
+
+* {
+  margin: 0; padding: 0; box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(0, 255, 204, 0.05), transparent 25%),
+    radial-gradient(circle at 85% 30%, rgba(138, 43, 226, 0.05), transparent 25%);
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* ==========================================
+   LAYOUTS & CONTAINERS
+========================================== */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Glassmorphism Cards */
+.glass-card {
+  background: var(--surface-color);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  transition: transform 0.3s ease;
+}
+
+/* ==========================================
+   RESPONSIVE GRIDS
+========================================== */
+.grid-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  width: 100%;
+}
+
+/* ==========================================
+   TYPOGRAPHY & ACCENTS
+========================================== */
+h1 { font-size: var(--font-h1); font-weight: 700; margin-bottom: 1rem; }
+h2 { font-size: var(--font-h2); font-weight: 600; margin-bottom: 1rem; }
+p { font-size: var(--font-p); color: var(--text-muted); line-height: 1.6; }
+
+.neon-text {
+  background: var(--gradient-btn);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 20px rgba(0, 255, 204, 0.3);
+}
+
+/* ==========================================
+   FORMS & INPUTS (Mobile First)
+========================================== */
+.form-group {
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-glass);
+  border-radius: 8px;
+  color: var(--text-main);
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--primary-neon);
+}
+
+/* ==========================================
+   BUTTONS
+========================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 48px; /* Touch-friendly height */
+  padding: 0 1.5rem;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: var(--gradient-btn);
+  color: #000;
+  box-shadow: 0 4px 15px rgba(0, 255, 204, 0.2);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 255, 204, 0.4);
+}
+
+/* ==========================================
+   TABLES (Responsive Wrapper)
+========================================== */
+.table-container {
+  overflow-x: auto;
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--border-glass);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+
+th, td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+th {
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--text-muted);
+}
+
+/* ==========================================
+   NAVIGATION DRAWER (Mobile)
+========================================== */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 0;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.nav-links { display: flex; gap: 2rem; }
+
+@media (max-width: 768px) {
+  .nav-links {
+    position: fixed;
+    top: 0; right: -100%;
+    width: 250px; height: 100vh;
+    background: var(--bg-color);
+    flex-direction: column;
+    padding: 4rem 2rem;
+    transition: 0.3s ease;
+    border-left: 1px solid var(--border-glass);
+    z-index: 100;
+  }
+  .nav-links.active { right: 0; }
+  .btn { width: 100%; }
+}
