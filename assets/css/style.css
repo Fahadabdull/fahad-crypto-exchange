@@ -96,7 +96,7 @@ label {
 input, select, textarea {
   width: 100%;
   padding: 1rem;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(15, 29, 21, 1);
   border: 1px solid var(--border-glass);
   border-radius: 8px;
   color: var(--text-main);
