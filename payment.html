@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Submit Payment | Fahad Crypto</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <div class="container" style="max-width: 600px; padding-top: 4rem;">
+    <div class="glass-card">
+      <h2 style="text-align: center;">Submit Payment Proof</h2>
+      <p style="text-align: center; margin-bottom: 2rem;">Order: <strong id="displayOrderId" class="neon-text"></strong></p>
+
+      <form id="paymentForm">
+        <div class="form-group">
+          <label>Payment Method Used</label>
+          <select id="payMethod" required>
+            <option value="Bank Transfer">Bank Transfer</option>
+            <option value="Binance Pay">Binance Pay</option>
+            <option value="USDT">USDT Wallet</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Transaction / Reference ID</label>
+          <input type="text" id="trxId" required>
+        </div>
+        <div class="form-group">
+          <label>Upload Screenshot (JPG/PNG)</label>
+          <input type="file" id="proofImage" accept="image/*" required style="padding: 0.5rem;">
+        </div>
+        <button type="submit" class="btn btn-primary" id="uploadBtn">Submit Payment</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="assets/js/api.js"></script>
+  <script>
+    const orderId = sessionStorage.getItem('currentOrderId');
+    if (!orderId) window.location.href = 'track.html';
+    document.getElementById('displayOrderId').innerText = orderId;
+
+    document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const file = document.getElementById('proofImage').files[0];
+      if (!file) return;
+
+      const btn = document.getElementById('uploadBtn');
+      btn.innerText = 'Uploading... Please wait';
+      btn.disabled = true;
+
+      // Convert image to Base64
+      const reader = new FileReader();
+      reader.onload = async function() {
+        const base64Data = reader.result.split(',')[1]; // Remove data URI prefix
+        
+        const payload = {
+          action: 'submitPayment',
+          orderId: orderId,
+          method: document.getElementById('payMethod').value,
+          trxId: document.getElementById('trxId').value,
+          fileName: file.name,
+          mimeType: file.type,
+          fileData: base64Data
+        };
+
+        const result = await executeAPI(payload);
+        
+        if (result && result.success) {
+          document.querySelector('.glass-card').innerHTML = `
+            <h2 style="text-align:center" class="neon-text">Payment Submitted!</h2>
+            <p style="text-align:center">We are verifying your transaction. Your crypto will be sent shortly.</p>
+            <br><a href="track.html" class="btn btn-primary">Back to Tracking</a>
+          `;
+        } else {
+          btn.innerText = 'Submit Payment';
+          btn.disabled = false;
+          alert('Upload failed. Try again.');
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+    // Function to update order status from the dashboard
+async function updateOrderStatus(orderId, newStatus) {
+  const token = localStorage.getItem('adminToken');
+  const payload = {
+    action: 'updateStatus',
+    token: token,
+    orderId: orderId,
+    newStatus: newStatus
+  };
+
+  const result = await executeAPI(payload);
+  if (result && result.success) {
+    alert(`Order ${orderId} updated to ${newStatus}`);
+    loadOrders(); // Refresh table (function defined in dashboard.html)
+  }
+}
+
+  </script>
+</body>
+</html>

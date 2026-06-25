@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | Fahad Crypto</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <div class="container" style="max-width: 1400px;">
+    <header>
+      <h2>Admin <span class="neon-text">Dashboard</span></h2>
+      <button class="btn btn-primary" onclick="logout()" style="width:auto">Logout</button>
+    </header>
+
+    <main style="padding: 2rem 0;">
+      
+      <div class="grid-layout" style="margin-bottom: 2rem;">
+        <div class="glass-card">
+          <h3>Total Orders</h3>
+          <h1 class="neon-text" id="stat-total">0</h1>
+        </div>
+        <div class="glass-card">
+          <h3>Pending Review</h3>
+          <h1 class="neon-text" id="stat-pending">0</h1>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <h3 style="margin-bottom: 1rem;">Recent Orders</h3>
+        <div class="table-container">
+          <table id="ordersTable">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Date</th>
+                <th>Customer Info</th>
+                <th> Wallet Address </th>
+                <th>Asset</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="ordersBody">
+              <tr><td colspan="8">Loading secure data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/js/api.js"></script>
+  <script>
+    // Extremely basic Auth check for UI (Real security is in GAS API Token)
+    const token = localStorage.getItem('adminToken');
+    if(!token) window.location.href = 'admin-login.html';
+
+    async function loadOrders() {
+      const result = await executeAPI({ action: 'getAdminOrders', token: token });
+      if(result && result.success) {
+        const tbody = document.getElementById('ordersBody');
+        tbody.innerHTML = '';
+        
+        document.getElementById('stat-total').innerText = result.orders.length;
+        document.getElementById('stat-pending').innerText = result.orders.filter(o => o.status === 'Pending Review').length;
+
+        result.orders.forEach(order => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><strong>${order.orderId}</strong></td>
+    <td>${new Date(order.timestamp).toLocaleDateString()}</td>
+    <td>
+      ${order.customer.name}<br>
+      <small style="color:var(--text-muted)">${order.customer.whatsapp}</small>
+    </td>
+    <td>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <input type="text" readonly value="${order.customer.wallet || 'N/A'}" 
+          id="wallet-${order.orderId}"
+          style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 0.85rem; width: 180px;">
+        <button class="btn" style="min-height:28px; padding: 0 8px; font-size:0.75rem; background:var(--primary-color);"
+          onclick="navigator.clipboard.writeText('${order.customer.wallet || ''}'); alert('Wallet copied!');">
+          <p class="neon-text">Copy</p>
+        </button>
+      </div>
+    </td>
+    <td><span class="neon-text">${order.coin}</span> (${order.network})</td>
+    <td>${order.amount}</td>
+    <td><span style="background:rgba(255,255,255,0.1); padding:4px 8px; border-radius:4px;">${order.status}</span></td>
+    <td>
+      <select onchange="updateOrderStatus('${order.orderId}', this.value)" style="padding:4px; width:120px; margin-bottom:4px;">
+        <option value="${order.status}" selected disabled>${order.status}</option>
+        <option value="Pending Review">Pending Review</option>
+        <option value="Quoted">Quoted</option>
+        <option value="Processing">Processing</option>
+        <option value="Completed">Completed</option>
+      </select><br>
+      <button class="btn btn-primary" style="min-height:30px; font-size:0.8rem; padding: 0 10px;" 
+        onclick="generateWhatsAppMessage('${order.orderId}', '${order.customer.name}', '${order.coin}', '${order.amount}', '${order.customer.whatsapp}')">
+        WhatsApp Quote
+      </button>
+    </td>
+  `;
+  tbody.appendChild(tr);
+});
+      }
+    }
+    
+    function logout() {
+      localStorage.removeItem('adminToken');
+      window.location.href = 'admin-login.html';
+    }
+
+    // FIXED: Added the missing status update connection function
+    async function updateOrderStatus(orderId, newStatus) {
+      if (!newStatus) return;
+      
+      // Optional: Add a smooth visual indicator or confirmation
+      const loadingAlert = console.log(`Updating ${orderId} to ${newStatus}...`);
+      
+      const result = await executeAPI({ 
+        action: 'updateStatus', 
+        token: token, 
+        orderId: orderId, 
+        newStatus: newStatus 
+      });
+      
+      if (result && result.success) {
+        // Refresh dashboard statistics and statuses in real-time
+        await loadOrders(); 
+      } else {
+        alert('Failed to update status: ' + (result?.error || 'Unknown error'));
+        loadOrders(); // Reset dropdown view back to actual state if API fails
+      }
+    }
+
+    loadOrders();
+    
+    // WhatsApp Quotation Generator
+    function generateWhatsAppMessage(orderId, customerName, coin, amount, phone) {
+      const rate = prompt(`Enter exchange rate for ${amount} ${coin}:`);
+      if (!rate) return;
+      
+      const total = parseFloat(amount) * parseFloat(rate);
+      
+      const msg = `Hello ${customerName},%0A%0A`
+        + `Your order *${orderId}* is ready for payment.%0A`
+        + `Asset: ${amount} ${coin}%0A`
+        + `Rate: ${rate}%0A`
+        + `Total Payable: *${total}*%0A%0A`
+        + `Please click here to track your order and upload payment proof:%0A`
+        + `https://fahadabdull.github.io/fahad-crypto-exchange/track.html`;
+
+      const cleanPhone = phone.replace(/[^0-9]/g, '');
+      // 1. Build your clean text components (use standard \n for email body newlines)
+const emailSubject = `PAYMENT LINK | ORDER NO: ${orderId} | ${customerName}`;
+
+
+// 2. Safely encode them for the URL
+const encodedSubject = encodeURIComponent(emailSubject);
+
+
+// 3. Fire the window open without any raw spaces or illegal characters
+
+      window.open(`https://wa.me/${cleanPhone}?text=${msg}`, '_blank');
+      window.open(`mailto:dce.fahad@gmail.com?subject=${encodedSubject}&body=Your payment link is ready.%0A Details:%0A${msg}`, '_blank');
+      
+      // This will now successfully fire because the function is defined above!
+      updateOrderStatus(orderId, 'Quoted');
+    }
+  </script>
+</body>
+</html>

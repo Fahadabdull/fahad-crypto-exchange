@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Admin Login | Fahad Crypto</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body style="display: flex; align-items: center; justify-content: center; min-height: 100vh;">
+
+  <div class="container" style="max-width: 400px;">
+    <div class="glass-card" style="text-align: center;">
+      <h2 style="margin-bottom: 2rem;">Admin <span class="neon-text">Access</span></h2>
+      
+      <form id="adminLoginForm">
+        <div class="form-group" style="text-align: left;">
+          <label>Username</label>
+          <input type="text" id="username" required>
+        </div>
+        <div class="form-group" style="text-align: left;">
+          <label>Password</label>
+          <input type="password" id="password" required>
+        </div>
+        <button type="submit" class="btn btn-primary" id="loginBtn">Login to Dashboard</button>
+      </form>
+      <div id="loginError" style="color: #ff4444; margin-top: 1rem; display: none;">Invalid credentials</div>
+    </div>
+  </div>
+
+  <script src="assets/js/api.js"></script>
+  <script>
+    document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('loginBtn');
+      btn.innerText = 'Authenticating...';
+      
+      const payload = {
+        action: 'adminLogin',
+        username: document.getElementById('username').value,
+        password: document.getElementById('password').value
+      };
+
+      const result = await executeAPI(payload);
+      
+      if (result && result.success) {
+        localStorage.setItem('adminToken', result.token);
+        window.location.href = 'dashboard.html';
+      } else {
+        document.getElementById('loginError').style.display = 'block';
+        btn.innerText = 'Login to Dashboard';
+      }
+    });
+  </script>
+</body>
+</html>

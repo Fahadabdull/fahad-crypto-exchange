@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Track Order | Fahad Crypto</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo"><h2>Fahad<span class="neon-text">Crypto</span></h2></div>
+      <nav class="nav-links">
+        <a href="index.html" style="color:white; text-decoration:none;">Home</a>
+      </nav>
+    </header>
+
+    <main style="padding: 4rem 0; max-width: 600px; margin: 0 auto;">
+      <div class="glass-card">
+        <h2 style="text-align: center; margin-bottom: 2rem;">Track Your Order</h2>
+        <div class="form-group">
+          <input type="text" id="searchOrderId" placeholder="Enter Order ID (e.g., CRY-2026-123456)">
+        </div>
+        <button class="btn btn-primary" onclick="trackOrder()">Track Status</button>
+
+        <div id="trackResult" style="margin-top: 2rem; display: none;">
+          <hr style="border-color: var(--border-glass); margin-bottom: 1.5rem;">
+          <h3>Status: <span class="neon-text" id="t-status"></span></h3>
+          <p style="margin-top: 1rem;"><strong>Asset:</strong> <span id="t-coin"></span></p>
+          <p><strong>Amount:</strong> <span id="t-amount"></span></p>
+          <p><strong>Date:</strong> <span id="t-date"></span></p>
+          
+          <div id="paymentAction" style="margin-top: 2rem; display: none;">
+            <a href="payment.html" class="btn btn-primary" style="background: var(--accent-purple);">Proceed to Payment</a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/js/api.js"></script>
+  <script>
+    async function trackOrder() {
+      const orderId = document.getElementById('searchOrderId').value.trim();
+      if (!orderId) return;
+
+      // Ensure API URL is properly appended with query parameters for a GET request
+      const response = await fetch(`${GAS_URL}?action=trackOrder&orderId=${orderId}`);
+      const result = await response.json();
+
+      if (result && result.success) {
+        document.getElementById('trackResult').style.display = 'block';
+        document.getElementById('t-status').innerText = result.order.status;
+        document.getElementById('t-coin').innerText = result.order.coin;
+        document.getElementById('t-amount').innerText = result.order.amount;
+        document.getElementById('t-date').innerText = new Date(result.order.timestamp).toLocaleDateString();
+
+        // Show payment button if status is quoted
+        if (result.order.status === 'Quoted' || result.order.status === 'Awaiting Payment') {
+          document.getElementById('paymentAction').style.display = 'block';
+          // Store order ID temporarily for the payment page
+          sessionStorage.setItem('currentOrderId', orderId);
+        }
+      } else {
+        alert("Order not found. Please check your Order ID.");
+      }
+    }
+  </script>
+</body>
+</html>

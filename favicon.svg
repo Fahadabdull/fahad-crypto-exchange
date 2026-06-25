@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="modernGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#8a2be2" />
+      <stop offset="50%" stop-color="#00ffff" />
+      <stop offset="100%" stop-color="#32cd32" />
+    </linearGradient>
+    <filter id="coreGlow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <path d="M15,25 L35,80 L50,55 L65,80 L85,25 L70,30 L50,62 L30,30 Z" fill="url(#modernGrad)" />
+  <polygon points="50,25 63,32.5 63,47.5 50,55 37,47.5 37,32.5" fill="#00ffff" opacity="0.8" filter="url(#coreGlow)" />
+  <polygon points="50,30 59,35 59,45 50,50 41,45 41,35" fill="#ffffff" opacity="0.9" />
+</svg>
